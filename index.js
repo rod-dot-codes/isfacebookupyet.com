@@ -1,4 +1,3 @@
-
 async function handleRequest(event) {
   const request = event.request
   const cacheUrl = new URL(request.url)
@@ -22,13 +21,16 @@ const init = {
       cacheTtl: 10
     }
   };
-  let facebookRequest = await fetch("https://www.facebook.com", init);
-  let _text = await facebookRequest.text();
-  let isStatusCorrect = facebookRequest.status == 200;
-  
+  let facebookRequest = null;
+  let isStatusCorrect = false;
   let dnsRequest = await fetch("https://dns.google/resolve?name=facebook.com", init);
   let dnsResponse = await dnsRequest.text();
   var isUp = JSON.parse(dnsResponse).Status === 0;
+  if (isUp) {
+    facebookRequest = await fetch("https://www.facebook.com", init);
+    let _text = await facebookRequest.text();
+    isStatusCorrect = facebookRequest.status == 200;
+  }
   var color = isUp ? (isStatusCorrect ? "green" : "yellow") : "red";
   var text = isUp ? (isStatusCorrect ? "YES" : "KIND OF. ERROR PAGE.") : "NO";
 
@@ -41,7 +43,7 @@ response =   new Response(`<!doctype html>
 <head>
 <!--
 I added these for debugging purposes:
-${facebookRequest.headers.get("date")}
+${facebookRequest ? facebookRequest.headers.get("date") : ""}
 ${dnsRequest.headers.get("date")}
 ${dnsResponse}
 --> 
@@ -104,7 +106,7 @@ n&&j.setAttribute('nonce',n.nonce||n.getAttribute('nonce'));f.parentNode.insertB
 <h1>${text}</h1>
 <br>
 <br>
-<h2>quickly imitated from <a href="https://isitdns.com/">https://isitdns.com/</a> with CF workers by <a href="https://rod.codes">rod.codes</a></h2>`
+<h2>quickly imitated from <a href="https://isitdns.com/">https://isitdns.com/</a> with CF workers by <a href="https://rod.codes">rod.codes</a>. Code at <a href="https://github.com/rod-dot-codes/isfacebookupyet.com">https://github.com/rod-dot-codes/isfacebookupyet.com</a>.</h2>`
 , {
     headers: {
       "content-type": "text/html;charset=UTF-8",
@@ -125,5 +127,3 @@ n&&j.setAttribute('nonce',n.nonce||n.getAttribute('nonce'));f.parentNode.insertB
 addEventListener("fetch", event => {
   return event.respondWith(handleRequest(event))
 })
-        
-
